@@ -1,1 +1,3 @@
-# CRSS8030_04_rcbd
+# CRSS8030 Excercise 4 - RCBD
+
+This repo was developed to conduct and **RCBD** analysis. 
