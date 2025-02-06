@@ -37,13 +37,13 @@ trts
 ```
 
 
-# CRD  
+# 1) CRD  
 ## Randomization  
 Since it is a CRD, randomization is unrestricted.  
 
 ```{r crd_rand}
 # Setting seed to get same randomization result every time
-set.seed(930)
+set.seed(812)
 
 crd_rand <- crossing(trtname = trts$trtname, 
                      rep = 1:4) %>% 
@@ -80,18 +80,26 @@ ggplot(data = crd_layout, aes(x = row, y = -col)) +
   geom_tile(aes(fill = trtname), color = "black", show.legend = F) + 
   geom_text(aes(label = lab), vjust = 0.5) + 
   labs(title = "CRD randomization of a 3 x 3 factorial (9 treatments)") +
-  theme_void()
-
+  theme_void() + 
+  scale_fill_viridis_d(alpha = 0.75)
 ```
+
+```{r}
+ggsave("output/crd_layoutmap.png",
+       width = 6,
+       height = 4,
+       bg = "white")
+```
+
 
 Notice how due to unrestricted randomization, we had the replication of some treatments falling in neighboring plots, e.g. plots 12 and 13 have the same treatment.  
 
 
-# RCBD  
+# 2) RCBD  
 ## Randomization  
 ```{r rcbd_rand}
 # Setting seed to get same randomization result every time
-set.seed(930)
+set.seed(812)
 
 rcbd_rand <- crossing(trtname = trts$trtname, 
                       rep = 1:4) %>% 
@@ -138,7 +146,8 @@ ggplot(data = rcbd_layout, aes(x = row,
   geom_text(aes(label = plot), fontface = "bold", vjust = -.8)+
   geom_text(aes(label = trtname), vjust = 1)+
   labs(title = "RCBD randomization of a 3 x 3 factorial (9 treatments)") +
-  theme_void()
+  theme_void() +
+  scale_fill_viridis_d(alpha = 0.75)
 
 ```
 

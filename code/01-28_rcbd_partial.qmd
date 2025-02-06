@@ -275,19 +275,32 @@ Remember that it is at this level that we establish the hierarchy of how our pai
 
 Let's extract it by comparing everything to everything else.
 ```{r interaction means all}
-rcbd_means_all 
+# emmeans: expected marginal means
 
+rcbd_means_all <- emmeans(rcbd_mod, ~ nrate_kgha * krate_kgha ) # compare everything to everything
 rcbd_means_all
+
+rcbd_means_all <- emmeans(rcbd_mod, ~ nrate_kgha | krate_kgha ) # N rate inside K rate
+rcbd_means_all
+
+rcbd_means_all <- emmeans(rcbd_mod, ~  krate_kgha | nrate_kgha ) # K rate inside N rate (comparisons of K are restricted to each N rate)
+rcbd_means_all
+
+
+# another way 
+rcbd_mod %>% emmeans(~ nrate_kgha : krate_kgha ) %>% 
+  cld (reversed = T, adjust = "none", Letters= letters)
 ```
 
 # i) Pairwise comparisons  
 Now that we extracted means, let's perform pairwise comparisons among them.  
 
 ```{r interaction pwc all}
+# cld: compact letter display
 rcbd_cld_all <- cld(rcbd_means_all, 
-                   reversed=T, 
-                   adjust="none",
-               Letters=letters)
+                   reversed=T, # from smallest to largest 
+                   adjust="none", # the more comparisons the more false positivies we'll find (Tukey is common)
+               Letters=letters) # we can add an alpha of 0.1 (alpha = 0.1) instead of 0.5
 
 rcbd_cld_all
 ```
@@ -295,7 +308,11 @@ rcbd_cld_all
 Let's do some light wrangling here to be able to plot these.  
 
 ```{r selected pwc}
-rcbd_cld_selected <- rcbd_cld_all 
+rcbd_cld_selected <- rcbd_cld_all %>% 
+  as.data.frame() %>% 
+  mutate(letter = trimws(.group)) %>%  # trimws: trim white space
+  mutate(trtname = paste0(nrate_kgha, "+", krate_kgha)) # create a column of treatments combinations
+
 
 rcbd_cld_selected
 ```
@@ -305,7 +322,50 @@ Let's plot our results, including both **raw data** (for allowing our audience t
 Let's make this plot publication ready.  
 
 ```{r rcbd final plot}
+# we are gonna use the raw data and means data
 
+  # raw data 
+ggplot() + 
+  geom_boxplot(data = rcbd_dfw, 
+               aes(x = trtname, y = yield_kgha, fill = trtname)) + 
+  geom_jitter(data = rcbd_dfw, 
+               aes(x = trtname, y = yield_kgha, color = trtname), alpha = 0.6) + 
+  
+  # letters 
+  geom_label(data = rcbd_cld_selected,        # we could use geom_label but gives a box
+            aes(x = trtname, y = emmean, label = letter), # emmean colum has the mean. Use letter columns instead of .group
+            size = 3, label.padding = unit(.1, "lines")) %>%  
+  labs(x = "N rate + K rate (Kg/rate)",
+       y = "Yield (Kg/ha)") + 
+  scale_fill_viridis_d() + 
+  scale_color_viridis_d() + 
+  #scale_color_manual(values = c("red", "blue", ))
+  theme(legend.position = "none")
+```
+
+Comparing K rate inside N rate
+```{r}
+  # raw data 
+ggplot() + 
+  geom_boxplot(data = rcbd_dfw, 
+               aes(x = krate_kgha, y = yield_kgha, fill = krate_kgha)) + 
+  geom_jitter(data = rcbd_dfw, 
+               aes(x = krate_kgha, y = yield_kgha, color = krate_kgha), alpha = 0.6) + 
+  
+  # letters 
+  geom_label(data = rcbd_cld_selected,        # we could use geom_label but gives a box
+            aes(x = krate_kgha, y = emmean, label = letter), # emmean colum has the mean. Use letter columns instead of .group
+            size = 3, label.padding = unit(.1, "lines")) %>%  
+  labs(x = "K rate (Kg/rate)",
+       y = "Yield (Kg/ha)") + 
+  scale_fill_viridis_d() + 
+  scale_color_viridis_d() + 
+  facet_grid(. ~ nrate_kgha) +
+  theme(legend.position = "none")
+
+ggsave("../output/rcbd_means.png", 
+       height = 4, 
+       width = 6)
 ```
 
 
