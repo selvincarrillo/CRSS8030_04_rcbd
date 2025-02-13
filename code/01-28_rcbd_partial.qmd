@@ -363,7 +363,7 @@ ggplot() +
   facet_grid(. ~ nrate_kgha) +
   theme(legend.position = "none")
 
-ggsave("../output/rcbd_means.png", 
+ggsave("output/rcbd_means.png", 
        height = 4, 
        width = 6)
 ```
